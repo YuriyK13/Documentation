@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 =head1 Documentation
 
- Abills Documentation
+ ABillS Documentation
 
 =cut
 
@@ -35,6 +35,9 @@ use Documentation::db::Documentation;
 our $html = Abills::HTML->new({ CONF => \%conf, NO_PRINT => 1, });
 our $db   = Abills::SQL->connect($conf{dbtype}, $conf{dbhost}, $conf{dbname}, $conf{dbuser}, $conf{dbpasswd}, { CHARSET => ($conf{dbcharset}) ? $conf{dbcharset} : undef });
 
+my $doc_url = 'http://abills.net.ua:8090';
+my $name = "ABillS Documentation";
+
 if ($conf{LANGS}) {
   $conf{LANGS} =~ s/\n//g;
   my (@lang_arr) = split(/;/, $conf{LANGS});
@@ -53,11 +56,11 @@ $admin->info($conf{SYSTEM_ADMIN_ID}, { IP => '127.0.0.1' });
 
 our $users = Users->new($db, $admin, \%conf);
 
-if($html->{language} ne 'english') {
+if ($html->{language} ne 'english') {
   do $libpath . "/language/english.pl";
 }
 
-if(-f $libpath . "/language/$html->{language}.pl") {
+if (-f $libpath . "/language/$html->{language}.pl") {
   do $libpath."/language/$html->{language}.pl";
 }
 
@@ -97,16 +100,37 @@ if ($FORM{add}) {
   }
 }
 
+if ($FORM{url}) {
+  my $url = $Doc->list({
+    WIKI       => $FORM{url},
+    CONFLUENCE => '_SHOW',
+    VERIF      => 1,
+    COLS_NAME  => 1
+  });
+  $url = $url->[0]->{confluence} if($url);
+
+  if (!$url) {
+    # In this place, we should handle not founded url
+  }
+  else {
+    $html->redirect($url);
+    exit 1;
+  }
+}
+
 if (!($FORM{header} && $FORM{header} == 2)) {
   print $html->header();
 
-  my $doc_url = 'http://abills.net.ua:8090';
-
-  my $button_wiki_doc = "<ul class='sidebar-menu tree' data-widget='tree'>";
-  $button_wiki_doc .= "<li><a href='$doc_url'><span>ABillS Documentation</span></a></li>";
+  my $button_wiki_doc = "<ul class='nav nav-pills nav-sidebar sidebar-menu tree mt-2' data-widget='tree'>";
+  $button_wiki_doc .= "<li class='nav-item'>";
+  $button_wiki_doc .= "<a class='nav-link' href='$doc_url'>";
+  $button_wiki_doc .= "<i class='fas fa-book'></i>";
+  $button_wiki_doc .= "<p>$name</p>";
+  $button_wiki_doc .= "</a>";
+  $button_wiki_doc .= "</li>";
   $button_wiki_doc .= "</ul>";
   
-  $OUTPUT{HTML_STYLE} = 'lte_adm';
+  $OUTPUT{HTML_STYLE} = 'default';
   $OUTPUT{CONTENT_LANGUAGE} = lc $CONTENT_LANGUAGE;
   $OUTPUT{INDEX_NAME} = 'doc.cgi';
   $OUTPUT{TITLE}      = "$conf{WEB_TITLE} - WIKI";
@@ -118,6 +142,8 @@ if (!($FORM{header} && $FORM{header} == 2)) {
   $OUTPUT{TIME} = $TIME;
   $OUTPUT{IP} = $ENV{'REMOTE_ADDR'};
   $OUTPUT{BODY} = $html->{OUTPUT};
+  $OUTPUT{SIDEBAR_SKIN} = 'sidebar-dark-lightblue';
+  $OUTPUT{NAVBAR_SKIN} = 'navbar-dark';
   $OUTPUT{SKIN} = 'skin-yellow';
   $OUTPUT{MENU} = $button_wiki_doc,
   $OUTPUT{BODY} = $html->tpl_show(templates('form_client_main'), \%OUTPUT);
@@ -146,7 +172,7 @@ if ($FORM{url}) {
   }
   else {
     $html->redirect($url);
-    return 1;
+    exit 1;
   }
 }
 
