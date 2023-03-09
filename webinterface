@@ -106,8 +106,10 @@ sub doc_list {
       {
         width      => '100',
         caption    => "Doc",
-        title      => [ 'WIKI', 'CONFLUENCE' ],
-        MENU       => "Add url:index=" . $index . '&add_form=1:add'
+        title      => [ 'WIKI', 'CONFLUENCE', '', '', ''],
+        MENU       => "Add url:index=" . $index . '&add_form=1:add',
+        ID         => 'DOCUMENTATION',
+        DATA_TABLE => 1,
       }
     );
 
